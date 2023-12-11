@@ -1,4 +1,5 @@
 #include "build_series.cpp"
+#include "dev_func.cpp"
 #include "func.cpp"
 
 #include <bits/stdc++.h>

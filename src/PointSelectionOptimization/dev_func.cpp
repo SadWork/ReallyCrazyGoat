@@ -1,0 +1,79 @@
+#pragma once
+#include <bits/stdc++.h>
+
+using namespace std;
+using Real = double;
+
+namespace dev_func
+{
+    Real find_order_statistics(vector<Real> &array, unsigned k, unsigned start, unsigned end);
+
+    Real find_median_BFPRT(vector<Real> &array);
+
+    void selection_sort(vector<Real> &array, unsigned start, unsigned end);
+    unsigned partition(vector<Real> &array, Real x, unsigned start, unsigned end);
+
+    Real find_median_BFPRT(vector<Real> &array) { return dev_func::find_order_statistics(array, array.size() / 2, 0, array.size()); }
+
+    Real find_order_statistics(vector<Real> &array, unsigned k, unsigned start, unsigned end)
+    {
+        constexpr unsigned GROUP_SIZE = 5;
+
+        unsigned num_groups = 0;
+
+        if (end - start <= 5)
+        {
+            dev_func::selection_sort(array, start, end);
+            return array[k];
+        }
+
+        for (unsigned i = start; i + 5 <= end; i += 5)
+        {
+            dev_func::selection_sort(array, i, i + 5);
+            swap(array[num_groups + start], array[i + 2]);
+            num_groups++;
+        }
+
+        Real x = dev_func::find_order_statistics(array, start + num_groups / 2, start, start + num_groups);
+
+        unsigned l = dev_func::partition(array, x, start, end);
+        unsigned r = l + 1;
+
+        while ((r < end) && (array[r]) == x) { r++; }
+        if (k <= l)
+        {
+            return dev_func::find_order_statistics(array, k, start, l + 1);
+        }
+        if (k >= r)
+        {
+            return dev_func::find_order_statistics(array, k, r, end);
+        }
+        return array[k];
+    }
+
+    void selection_sort(vector<Real> &array, unsigned start, unsigned end)
+    {
+        for (unsigned i = start; i < end; i++)
+        {
+            for (unsigned j = i + 1; j < end; j++)
+            {
+                if (array[i] > array[j])
+                {
+                    swap(array[i], array[j]);
+                }
+            }
+        }
+    }
+
+    unsigned partition(vector<Real> &array, Real x, unsigned start, unsigned end)
+    {
+        unsigned l = start, r = end - 1;
+        while (r > l)
+        {
+            while ((array[r] >= x) && (r > l)) { r--; }
+            while ((array[l] < x) && (r > l)) { l++; }
+            swap(array[l], array[r]);
+        }
+        return l; //(array[l] < x) ? l : (l - 1);
+    }
+};
