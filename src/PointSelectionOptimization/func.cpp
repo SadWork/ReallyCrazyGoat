@@ -2,10 +2,9 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-template <typename Real>
-int solveLinearSystemPivot(vector<vector<Real>> &A, vector<Real> b, vector<Real> &x, int n, int m)
+template <typename Real> int solveLinearSystemPivot(vector<vector<Real>> &A, vector<Real> b, vector<Real> &x, int n, int m)
 {
-    const Real EPSILON = 1e-5;
+    const Real EPSILON = 1e-9;
 
     for (int row = 0, col = 0; col < n && row < m; ++row)
     {
@@ -26,10 +25,7 @@ int solveLinearSystemPivot(vector<vector<Real>> &A, vector<Real> b, vector<Real>
             for (int i = col + 1; i < n; ++i)
             {
                 Real c = A[i][row] / A[col][row];
-                for (int j = row; j < m; ++j)
-                {
-                    A[i][j] -= c * A[col][j];
-                }
+                for (int j = row; j < m; ++j) { A[i][j] -= c * A[col][j]; }
                 b[i] -= c * b[col];
             }
             ++col;
@@ -57,17 +53,13 @@ int solveLinearSystemPivot(vector<vector<Real>> &A, vector<Real> b, vector<Real>
             continue;
         }
 
-        for (int j = row + 1; j < m; j++)
-        {
-            b[col] -= A[col][j] * x[j];
-        }
+        for (int j = row + 1; j < m; j++) { b[col] -= A[col][j] * x[j]; }
         x[row] = b[col] / A[col][row];
     }
     return 0;
 }
 
-template <typename Real>
-int solveLinearSystem(vector<Real> &A, vector<Real> b, vector<Real> &x, int n, int m)
+template <typename Real> int solveLinearSystem(vector<Real> &A, vector<Real> b, vector<Real> &x, int n, int m)
 {
     const Real EPSILON = 1e-10;
 
@@ -94,10 +86,7 @@ int solveLinearSystem(vector<Real> &A, vector<Real> b, vector<Real> &x, int n, i
         }
 
         Real factor = A[i * m + pivot];
-        for (int j = 0; j < m; ++j)
-        {
-            A[i * m + j] /= factor;
-        }
+        for (int j = 0; j < m; ++j) { A[i * m + j] /= factor; }
         b[i] /= factor;
 
         for (int k = 0; k < n; ++k)
@@ -105,10 +94,7 @@ int solveLinearSystem(vector<Real> &A, vector<Real> b, vector<Real> &x, int n, i
             if (k != i)
             {
                 Real multiplier = A[k * m + pivot];
-                for (int j = 0; j < m; ++j)
-                {
-                    A[k * m + j] -= multiplier * A[i * m + j];
-                }
+                for (int j = 0; j < m; ++j) { A[k * m + j] -= multiplier * A[i * m + j]; }
                 b[k] -= multiplier * b[i];
             }
         }
@@ -136,28 +122,22 @@ int solveLinearSystem(vector<Real> &A, vector<Real> b, vector<Real> &x, int n, i
     return 0;
 }
 
-template <typename Real>
-void multiplySqMatrix(vector<Real> &A, vector<Real> &B, vector<Real> &C, int n)
+template <typename Real> void multiplySqMatrix(vector<Real> &A, vector<Real> &B, vector<Real> &C, int n)
 {
     fill(C.begin(), C.end(), Real(0));
     for (int i = 0; i < n; i++)
     {
         for (int s = 0; s < n; s++)
         {
-            for (int j = 0; j < n; j++)
-            {
-                C[i * n + j] += A[i * n + s] * B[s * n + j];
-            }
+            for (int j = 0; j < n; j++) { C[i * n + j] += A[i * n + s] * B[s * n + j]; }
         }
     }
 }
 
-template <typename Real>
-bool NextSet(vector<Real> &a, int n, int m)
+template <typename Real> bool NextSet(vector<Real> &a, int n, int m)
 {
     int j = m - 1;
-    while (a[j] == n && j >= 0)
-        j--;
+    while (a[j] == n && j >= 0) j--;
     if (j < 0)
         return false;
     if (a[j] >= n)
@@ -165,7 +145,6 @@ bool NextSet(vector<Real> &a, int n, int m)
     a[j]++;
     if (j == m - 1)
         return true;
-    for (int k = j + 1; k < m; k++)
-        a[k] = a[j];
+    for (int k = j + 1; k < m; k++) a[k] = a[j];
     return true;
 }

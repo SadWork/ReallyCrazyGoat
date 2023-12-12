@@ -76,4 +76,18 @@ namespace dev_func
         }
         return l; //(array[l] < x) ? l : (l - 1);
     }
+
+    // Генерирует по порядку все наборы из n элементов из множества |1, m|
+    template <typename Integer> bool NextSetNoRepeat(vector<Integer> &a, int n, int m)
+    {
+        int k = m;
+        for (int i = k - 1; i >= 0; --i)
+            if (a[i] < n - k + i + 1)
+            {
+                ++a[i];
+                for (int j = i + 1; j < k; ++j) a[j] = a[j - 1] + 1;
+                return true;
+            }
+        return false;
+    }
 };

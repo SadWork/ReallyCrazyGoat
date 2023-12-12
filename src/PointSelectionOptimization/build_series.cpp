@@ -1,11 +1,12 @@
-#include <bits/stdc++.h>
+#include "dev_func.cpp"
 
+#include <bits/stdc++.h>
 #define DEBUG0
 
 #ifdef DEBUG
-#define DEBUG_ONLY(code) code
+    #define DEBUG_ONLY(code) code
 #else
-#define DEBUG_ONLY(code)
+    #define DEBUG_ONLY(code)
 #endif
 
 using namespace std;
@@ -18,36 +19,34 @@ using namespace std;
  *
  * Функция должна получать вектор координат и требуемую длину ряда series.size()
  * В результате работы возвращаются значения ряда, записываются в массив
-*/
- 
+ */
+
 void build_series(const vector<double> &coords, vector<double> &series);
 void build_series(const vector<double> &coords, int start, int end, vector<double> &series, int start2, int end2);
 
 void build_series_p(const vector<double> &coords, vector<double> &series);
 void build_series_p(const vector<double> &coords, int start, int end, vector<double> &series, int start2, int end2);
 
+void build_series_p_stable(const vector<double> &cords, vector<double> &series);
+void build_series_p_stable(const vector<double> &cords, int start1, int end1, vector<double> &series, int start2, int end2);
+
 void build_series_f(const vector<double> &coords, vector<double> &series);
 void build_series_f(const vector<double> &coords, int start, int end, vector<double> &series, int start2, int end2);
 
-void build_series(const vector<double> &coords, vector<double> &series)
+void build_series(const vector<double> &coords, vector<double> &series) { build_series(coords, 0, coords.size(), series, 0, series.size()); }
+void build_series_p(const vector<double> &coords, vector<double> &series) { build_series_p(coords, 0, coords.size(), series, 0, series.size()); }
+void build_series_p_stable(const vector<double> &coords, vector<double> &series)
 {
-    build_series(coords, 0, coords.size(), series, 0, series.size());
+    build_series_p_stable(coords, 0, coords.size(), series, 0, series.size());
 }
-void build_series_p(const vector<double> &coords, vector<double> &series)
-{
-    build_series_p(coords, 0, coords.size(), series, 0, series.size());
-}
-void build_series_f(const vector<double> &coords, vector<double> &series)
-{
-    build_series_f(coords, 0, coords.size(), series, 0, series.size());
-}
+void build_series_f(const vector<double> &coords, vector<double> &series) { build_series_f(coords, 0, coords.size(), series, 0, series.size()); }
 
 void build_series(const vector<double> &coords, int start1, int end1, vector<double> &series, int start2, int end2)
 {
     int dimension = end1 - start1;
-    int len = end2 - start2;
-    int max_k = ceil((pow(len, 1. / dimension) - 1) / 2);
-    double STEP = log2(len);
+    int len       = end2 - start2;
+    int max_k     = ceil((pow(len, 1. / dimension) - 1) / 2);
+    double STEP   = 1.; // log2(len);
 
     series[start2] = 1.;
 
@@ -55,7 +54,7 @@ void build_series(const vector<double> &coords, int start1, int end1, vector<dou
     DEBUG_ONLY(debug_str.push_back("1"));
 
     int written_size = 1;
-    int io = start2 + 1;
+    int io           = start2 + 1;
 
     for (int i = 0; i < dimension; i++)
     {
@@ -85,10 +84,7 @@ void build_series(const vector<double> &coords, int start1, int end1, vector<dou
 
 EXIT:
 #ifdef DEBUG
-    for (auto s : debug_str)
-    {
-        cout << s << " ";
-    }
+    for (auto s : debug_str) { cout << s << " "; }
     cout << "\n";
 #endif
     return;
@@ -97,8 +93,8 @@ EXIT:
 void build_series_p(const vector<double> &cords, int start1, int end1, vector<double> &series, int start2, int end2)
 {
     int dimension = end1 - start1;
-    int len = end2 - start2;
-    int max_k = ceil(pow(len, 1. / dimension) - 1);
+    int len       = end2 - start2;
+    int max_k     = ceil(pow(len, 1. / dimension) - 1);
 
     series[start2] = 1.;
 
@@ -106,7 +102,7 @@ void build_series_p(const vector<double> &cords, int start1, int end1, vector<do
     DEBUG_ONLY(debug_str.push_back("1"));
 
     int written_size = 1;
-    int io = start2 + 1;
+    int io           = start2 + 1;
 
     for (int i = 0; i < dimension; i++)
     {
@@ -131,10 +127,53 @@ void build_series_p(const vector<double> &cords, int start1, int end1, vector<do
 
 EXIT:
 #ifdef DEBUG
-    for (auto s : debug_str)
+    for (auto s : debug_str) { cout << s << " "; }
+    cout << "\n";
+#endif
+    return;
+}
+
+void build_series_p_stable(const vector<double> &cords, int start1, int end1, vector<double> &series, int start2, int end2)
+{
+    int dimension = end1 - start1;
+    int len       = end2 - start2;
+
+    series[start2] = 1.;
+
+    DEBUG_ONLY(vector<string> debug_str);
+    DEBUG_ONLY(debug_str.push_back("1"));
+
+    int written_size = 1;
+    int io           = start2 + 1;
+
+    vector<int> indexes(dimension);
+    for (int k = 1; io < end2; k++)
     {
-        cout << s << " ";
+        indexes[dimension - 1] = k + dimension;
+        for (int i = 0; i < dimension - 1; i++) { indexes[i] = i + 1; }
+
+        do {
+            int cur_deg = indexes[0] - 1;
+            double res  = pow(cords[start1], cur_deg) * pow(10, k / log2(10.));
+            DEBUG_ONLY(string s = "(x0^" + to_string(cur_deg) + ")");
+            for (int i = 1; i < dimension; i++)
+            {
+                cur_deg = indexes[i] - indexes[i - 1] - 1;
+                res *= pow(cords[i + start1], cur_deg);
+                DEBUG_ONLY(s += "(x" + to_string(i) + "^" + to_string(cur_deg) + ")");
+            }
+            series[io++] = res;
+            DEBUG_ONLY(debug_str.push_back(s));
+            if (io == end2)
+            {
+                break;
+            }
+        } while (dev_func::NextSetNoRepeat(indexes, k + dimension - 1, dimension - 1));
     }
+
+EXIT:
+#ifdef DEBUG
+    for (auto s : debug_str) { cout << s << " "; }
     cout << "\n";
 #endif
     return;
@@ -143,9 +182,9 @@ EXIT:
 void build_series_f(const vector<double> &coords, int start1, int end1, vector<double> &series, int start2, int end2)
 {
     int dimension = end1 - start1;
-    int len = end2 - start2;
-    double STEP = 1.;
-    int max_k = ceil(double(len - 1) / (dimension * 2));
+    int len       = end2 - start2;
+    double STEP   = 1.;
+    int max_k     = ceil(double(len - 1) / (dimension * 2));
 
     series[start2] = 1.;
 
@@ -161,26 +200,22 @@ void build_series_f(const vector<double> &coords, int start1, int end1, vector<d
         {
             series[io++] = cos(tmp * k);
             DEBUG_ONLY(debug_str.push_back("cos(" + to_string(k * STEP) + " * x" + to_string(i) + ")"));
-            if(io == end2)
+            if (io == end2)
             {
-                goto EXIT;   
+                goto EXIT;
             }
             series[io++] = sin(tmp * k);
             DEBUG_ONLY(debug_str.push_back("sin(" + to_string(k * STEP) + " * x" + to_string(i) + ")"));
-            if(io == end2)
+            if (io == end2)
             {
-                goto EXIT;   
+                goto EXIT;
             }
         }
-
     }
 
 EXIT:
 #ifdef DEBUG
-    for (auto s : debug_str)
-    {
-        cout << s << " ";
-    }
+    for (auto s : debug_str) { cout << s << " "; }
     cout << "\n";
 #endif
     return;
