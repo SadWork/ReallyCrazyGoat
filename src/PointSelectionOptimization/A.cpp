@@ -1,7 +1,6 @@
 #include "build_series.cpp"
 #include "dev_func.cpp"
 #include "func.cpp"
-// #include "../build_series.cpp"
 
 #include <bits/stdc++.h>
 #define build_series build_series_p_stable
