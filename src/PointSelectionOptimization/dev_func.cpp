@@ -77,7 +77,7 @@ namespace dev_func
         return l; //(array[l] < x) ? l : (l - 1);
     }
 
-    // Генерирует по порядку все наборы из n элементов из множества |1, m|
+    // Генерирует по порядку все выборы m элементов из множества |1, n|
     template <typename Integer> bool NextSetNoRepeat(vector<Integer> &a, int n, int m)
     {
         int k = m;
@@ -89,5 +89,38 @@ namespace dev_func
                 return true;
             }
         return false;
+    }
+
+    // Генерирует по порядку все выборы с повторениями m элементов из множества |1, n|
+    template <typename Integer> bool NextSet(vector<Integer> &a, int n, int m)
+    {
+        int j = m - 1;
+        while (a[j] == n && j >= 0) j--;
+        if (j < 0)
+            return false;
+        if (a[j] >= n)
+            j--;
+        a[j]++;
+        if (j == m - 1)
+            return true;
+        for (int k = j + 1; k < m; k++) a[k] = a[j];
+        return true;
+    }
+
+    // Генерирует следующую по порядку двоичную маску (прибавляет 1 к n битовому числу)
+    bool NextMask(vector<bool> &a, int n)
+    {
+        int j = 0;
+        while (a[j] && (j < n))
+        {
+            a[j] = 0;
+            j++;
+        }
+        if (j == n)
+        {
+            return false;
+        }
+        a[j] = 1;
+        return true;
     }
 };
