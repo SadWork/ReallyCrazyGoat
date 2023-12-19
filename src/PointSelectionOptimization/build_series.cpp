@@ -1,7 +1,7 @@
 #include "dev_func.cpp"
 
 #include <bits/stdc++.h>
-#define DEBUG0
+#define DEBUG
 
 #ifdef DEBUG
     #define DEBUG_ONLY(code) code
@@ -94,7 +94,7 @@ void build_series_p(const vector<double> &cords, int start1, int end1, vector<do
 {
     int dimension = end1 - start1;
     int len       = end2 - start2;
-    int max_k     = ceil(pow(len, 1. / dimension) - 1);
+    int max_k     = ceil(pow(len, 1. / dimension) - 1.);
 
     series[start2] = 1.;
 
@@ -104,7 +104,7 @@ void build_series_p(const vector<double> &cords, int start1, int end1, vector<do
     int written_size = 1;
     int io           = start2 + 1;
 
-    for (int i = 0; i < dimension; i++)
+    for (int i = 0; i < dimension; i++) // finding all possible multiplications of coordinates
     {
         double mul = cords[i + start1];
         for (int k = 1; k <= max_k; k++)
@@ -136,7 +136,6 @@ EXIT:
 void build_series_p_stable(const vector<double> &cords, int start1, int end1, vector<double> &series, int start2, int end2)
 {
     int dimension = end1 - start1;
-    int len       = end2 - start2;
 
     series[start2] = 1.;
 

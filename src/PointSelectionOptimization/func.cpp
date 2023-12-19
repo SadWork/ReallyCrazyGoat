@@ -6,55 +6,55 @@ template <typename Real> int solveLinearSystemPivot(vector<vector<Real>> &A, vec
 {
     const Real EPSILON = 1e-9;
 
-    for (int row = 0, col = 0; col < n && row < m; ++row)
+    for (int col = 0, row = 0; row < n && col < m; ++col)
     {
-        int pivot = col;
-        for (int i = col + 1; i < n; i++)
+        int pivot = row;
+        for (int i = row + 1; i < n; i++)
         {
-            if (abs(A[pivot][row]) < abs(A[i][row]))
+            if (abs(A[pivot][col]) < abs(A[i][col]))
             {
                 pivot = i;
             }
         }
 
-        if (abs(A[pivot][row]) > EPSILON)
+        if (abs(A[pivot][col]) > EPSILON)
         {
-            swap(A[pivot], A[col]);
-            swap(b[pivot], b[col]);
+            swap(A[pivot], A[row]);
+            swap(b[pivot], b[row]);
 
-            for (int i = col + 1; i < n; ++i)
+            for (int i = row + 1; i < n; ++i)
             {
-                Real c = A[i][row] / A[col][row];
-                for (int j = row; j < m; ++j) { A[i][j] -= c * A[col][j]; }
-                b[i] -= c * b[col];
+                Real c = A[i][col] / A[row][col];
+                for (int j = col; j < m; ++j) { A[i][j] -= c * A[row][j]; }
+                b[i] -= c * b[row];
             }
-            ++col;
+            ++row;
         }
     }
 
-    for (int col = n - 1; col >= 0; --col)
+    for (int row = n - 1; row >= 0; --row)
     {
-        int row = 0;
-        while (row < m)
+        int col = 0;
+        while (col < m)
         {
-            if (abs(A[col][row]) > EPSILON)
+            if (abs(A[row][col]) > EPSILON)
             {
                 break;
             }
-            row++;
+            col++;
         }
 
-        if (row == m)
+        if (col == m)
         {
-            if (abs(b[col]) > EPSILON)
+            if (abs(b[row]) > EPSILON)
             {
                 return -1;
             }
             continue;
         }
 
-        for (int j = row + 1; j < m; j++) { b[col] -= A[col][j] * x[j]; }
-        x[row] = b[col] / A[col][row];
+        for (int j = col + 1; j < m; j++) { b[row] -= A[row][j] * x[j]; }
+        x[col] = b[row] / A[row][col];
     }
     return 0;
 }
@@ -132,19 +132,4 @@ template <typename Real> void multiplySqMatrix(vector<Real> &A, vector<Real> &B,
             for (int j = 0; j < n; j++) { C[i * n + j] += A[i * n + s] * B[s * n + j]; }
         }
     }
-}
-
-template <typename Real> bool NextSet(vector<Real> &a, int n, int m)
-{
-    int j = m - 1;
-    while (a[j] == n && j >= 0) j--;
-    if (j < 0)
-        return false;
-    if (a[j] >= n)
-        j--;
-    a[j]++;
-    if (j == m - 1)
-        return true;
-    for (int k = j + 1; k < m; k++) a[k] = a[j];
-    return true;
 }

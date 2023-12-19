@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
 
                 double diff_i = abs(res - b[i]);
                 diff          = max(diff, diff_i);
-                diff_i /= abs(b[i]);
+                diff_i /= abs(b[i]); // b[i] == 0!!!!
 
                 if (diff_i > rel_diff)
                 {
