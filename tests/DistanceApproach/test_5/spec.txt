@@ -1,0 +1,2 @@
+Файл: A.cpp
+базис: distance_approach
