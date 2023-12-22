@@ -25,7 +25,7 @@ struct BasePoints
     }
 
     void build_series(const vector<double> &coords, int start1, int end1, vector<double> &series, int start2, int end2)
-    {
+    { // Ты именно тут используешь ту новую линейную комбинацию?
         int size = end2 - start2;
         if ((size > this->size()) or (end1 - start1 != this->dimensions))
         {
