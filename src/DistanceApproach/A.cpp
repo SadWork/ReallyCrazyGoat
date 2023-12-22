@@ -6,7 +6,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-int main(int argc, char *argv[])
+int main(int argc, char *argv[]) // Нужно переименовать названия файлов для более удобной и понятной координации между кодами
 {
     // Получаем файл на запись приближенных точек
     std::string path_output;
