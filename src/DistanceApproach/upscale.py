@@ -10,6 +10,7 @@ import hashlib
 
 matplotlib.use('TkAgg')
 
+# Пока что из доп библиотек нужна только matplotlib: pip install matplitlib
 
 
 

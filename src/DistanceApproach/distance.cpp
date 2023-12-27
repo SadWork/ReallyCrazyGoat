@@ -3,13 +3,14 @@ using namespace std;
 
 struct BasePoints
 {
-    vector<double> points;
-    vector<double> x;
+    vector<double> points; // координаты опорных точек
+    vector<double> x; // подобранные коэффиценты после решения СЛАУ
+
     int dimensions;
 
     int size() { return points.size() / dimensions; }
 
-    void insert(vector<double> &coords, int start, int end)
+    void insert(const vector<double> &coords, int start, int end) // Добавление опорной точки
     {
         if (end - start != dimensions)
         {
@@ -24,8 +25,10 @@ struct BasePoints
         x.resize(x.size() + 1, 0.);
     }
 
-    void build_series(const vector<double> &coords, int start1, int end1, vector<double> &series, int start2, int end2)
-    { // Ты именно тут используешь ту новую линейную комбинацию?
+    void build_series(const vector<double> &coords, int start1, int end1, vector<double> &series, int start2, int end2) //  Вычисление "мономов" по данным координатам
+    {
+        // Каждый моном - это растояние от текущей точки до добавленных опорных точек
+        
         int size = end2 - start2;
         if ((size > this->size()) or (end1 - start1 != this->dimensions))
         {
