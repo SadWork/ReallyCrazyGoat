@@ -1,2 +1,2 @@
 # ReallyCrazyGoat
-First try create git repo
+It doesn't work, but that's how it was planned
