@@ -1,0 +1,43 @@
+File Descriptions:
+
+C++ Files:
+
+    MonteKarl_HighD.cpp: Implements the Monte Carlo method for numerical integration in higher dimensions. It takes a function of multiple variables and approximates its integral over a given domain using random sampling. This version differs from MonteKarl_1D.cpp by handling multiple input variables and calculating the integral accordingly.
+
+    MonteKarl_1D.cpp: Implements the Monte Carlo method for numerical integration in one dimension. It takes a function of one variable and approximates its integral over a given interval using random sampling.
+
+    Fourie_1D.cpp: Implements Fourier series approximation for a one-dimensional function. It takes a function and approximates it using a truncated Fourier series, calculating the coefficients using numerical integration.
+
+    Fourie_HighD.cpp: Implements Fourier series approximation for higher dimensional functions. It takes a set of data points and their corresponding function values and approximates the function using a truncated Fourier series, calculating the coefficients using numerical integration. This version differs from Fourie_1D.cpp by handling multiple input dimensions and generating a multidimensional approximation.
+
+    GenTest.cpp: Generates test data for the Fourier series approximation programs. It creates a set of random points in a specified dimension and evaluates a given function at those points. The output is saved to a file.
+
+    dev_func.cpp: Provides various helper functions for the project, including:
+
+        Order statistics finding algorithms (BFPRT)
+
+        Sorting algorithms (selection sort)
+
+        Partitioning algorithms
+
+        Set generation algorithms (with and without repetition, multi-coefficient sets)
+
+        Mask generation algorithms
+
+    Fourie_IMG_SFML.cpp: Similar to Fourie_IMG.cpp but uses the SFML library to visualize the image reconstruction process in real-time.
+
+    Fourie_IMG.cpp: Implements Fourier series approximation for image reconstruction. It takes an image as input and approximates it using a truncated Fourier series, calculating the coefficients using numerical integration. The output is a new image file representing the approximation.
+
+    Fourie_IMG2.cpp: Similar to Fourie_IMG.cpp but uses a different approach for selecting the terms in the Fourier series.
+
+    Fourie_IMG3.cpp: Similar to Fourie_IMG2.cpp but with improved performance and scalability for larger images. It also provides progress updates during the approximation and drawing stages.
+
+Python Files:
+
+    run.py: This script automates the process of generating test data, running the Fourier series approximation program, and visualizing the results using Matplotlib. It includes functions for generating test points, running the C++ programs, and displaying the test and approximation points in 3D plots.
+
+    restorve.py: This script reconstructs an image from three separate files containing the red, green, and blue color channel data. It reads the data from the files, creates a new image, and sets the pixel colors based on the provided values.
+
+    img.py: This script preprocesses an image for Fourier series approximation. It reads the image, converts the pixel coordinates to normalized values, and separates the red, green, and blue color channels into separate files.
+
+    upscale.py: This script automates the image upscaling process using Fourier series approximation. It utilizes threading to run the approximation for each color channel concurrently, improving performance. It also incorporates temporary file management and visualization capabilities.
