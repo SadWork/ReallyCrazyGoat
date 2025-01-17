@@ -56,10 +56,10 @@ public:
                 Number pj = std::max(p[j], static_cast<Number>(eps));
                 Number qj = std::max(1 - pj, static_cast<Number>(eps));
 
-                Number succes_cnt = points[i][j] * experiments_size[j];
-                Number failure_cnt = (1 - points[i][j]) * experiments_size[j];
+                Number succes_cnt = points[i][j] * experiments_size[i];
+                Number failure_cnt = (1 - points[i][j]) * experiments_size[i];
 
-                ln_p += lgammaf64(experiments_size[j] + 1);
+                ln_p += lgammaf64(experiments_size[i] + 1);
                 ln_p -= lgammaf64(succes_cnt + 1);
                 ln_p -= lgammaf64(failure_cnt + 1);
                 ln_p += succes_cnt * logf64(pj);
