@@ -91,7 +91,7 @@ int main(const int argc, const char *argv[])
     int gradient_steps = strtol(argv[ARG_STEPS], NULL, 0);
 
     int dimensions, data_size, experiments_size;
-    cin >> dimensions >> data_size >> experiments_size;
+    cin >> dimensions >> data_size;
 
     BernsteinPolinom<Real> bp;
     Data<Real> data;
@@ -110,7 +110,7 @@ int main(const int argc, const char *argv[])
 
     gradient_descent(bp, data, gradient_steps);
 
-    string output_path = "approximation.txt";
+    string output_path = "~approximation.txt";
     ofstream output(output_path);
     if (!output.is_open())
     {
