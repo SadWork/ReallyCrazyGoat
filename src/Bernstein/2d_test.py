@@ -1,26 +1,26 @@
-import subprocess
-import argparse
-import matplotlib
+import subprocess, argparse, matplotlib, time
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 matplotlib.use("TkAgg")
 
-
 def run_program(command):
+    start_time = time.time()
     process = subprocess.Popen(
         command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True
     )
     (output, error) = process.communicate()
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    print(f"Executing '{command}' took {elapsed_time:.2f} seconds")
     return output.decode().strip()
 
 
 def gen_test():
-    print(run_program("./GenTest.exe 100000 1"))
-
+    print(run_program("./GenTest.exe 1 1"))
 
 def gen_approximation(apr_program):
-    gradient_steps = 1000
+    gradient_steps = 10000
     bernstein_size = 2
     run_program(f"{apr_program} {gradient_steps} {bernstein_size} < ~test.txt")
 
