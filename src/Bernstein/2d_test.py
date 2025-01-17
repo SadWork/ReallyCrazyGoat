@@ -21,7 +21,8 @@ def gen_test():
 
 def gen_approximation(apr_program):
     gradient_steps = 1000
-    run_program(f"{apr_program} {gradient_steps} < ~test.txt")
+    bernstein_size = 2
+    run_program(f"{apr_program} {gradient_steps} {bernstein_size} < ~test.txt")
 
 
 def show_test():

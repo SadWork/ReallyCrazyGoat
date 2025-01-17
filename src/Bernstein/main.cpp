@@ -1,13 +1,42 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+static constexpr double eps = 1e-10;
+
 template <class Number>
 class BernsteinPolinom
 {
 public:
     vector<vector<Number>> points;
     vector<Number> values;
-    Number experiments_size;
+    vector<Number> experiments_size;
+
+    BernsteinPolinom(int size, int dimension, mt19937 &gen)
+    {
+        uniform_real_distribution<Number> dist(0.0, 1.0);
+
+        points.resize(size, vector<Number>(dimension));
+        for (int i = 0; i < size; ++i)
+        {
+            for (int j = 0; j < dimension; ++j)
+            {
+                points[i][j] = dist(gen);
+            }
+        }
+
+        values.resize(size);
+        for (int i = 0; i < size; ++i)
+        {
+            values[i] = dist(gen);
+        }
+
+        static constexpr Number exp_offset = 1.0;
+        experiments_size.resize(size);
+        for (int i = 0; i < size; ++i)
+        {
+            experiments_size[i] = dist(gen) + exp_offset;
+        }
+    }
 
     Number calc(vector<Number> &p)
     {
@@ -24,13 +53,13 @@ public:
             Number ln_p = 0;
             for (int j = 0; j < points[i].size(); ++j)
             {
-                Number pj = std::max(p[j], static_cast<Number>(1e-10));
-                Number qj = std::max(1 - pj, static_cast<Number>(1e-10));
+                Number pj = std::max(p[j], static_cast<Number>(eps));
+                Number qj = std::max(1 - pj, static_cast<Number>(eps));
 
-                Number succes_cnt = points[i][j] * experiments_size;
-                Number failure_cnt = (1 - points[i][j]) * experiments_size;
+                Number succes_cnt = points[i][j] * experiments_size[j];
+                Number failure_cnt = (1 - points[i][j]) * experiments_size[j];
 
-                ln_p += lgammaf64(experiments_size + 1);
+                ln_p += lgammaf64(experiments_size[j] + 1);
                 ln_p -= lgammaf64(succes_cnt + 1);
                 ln_p -= lgammaf64(failure_cnt + 1);
                 ln_p += succes_cnt * logf64(pj);
@@ -81,6 +110,7 @@ void gradient_descent(BernsteinPolinom<Number> &bp, Data<Number> &data, int step
 enum
 {
     ARG_STEPS = 1,
+    ARG_BERNSTEIN_SIZE = 2,
 
     OUTPUT_NUMBER_POINTS = 1000,
 };
@@ -89,11 +119,15 @@ using Real = double;
 int main(const int argc, const char *argv[])
 {
     int gradient_steps = strtol(argv[ARG_STEPS], NULL, 0);
+    int bernstein_size = strtol(argv[ARG_BERNSTEIN_SIZE], NULL, 0);
 
     int dimensions, data_size, experiments_size;
     cin >> dimensions >> data_size;
 
-    BernsteinPolinom<Real> bp;
+    random_device randD;
+    mt19937 gen(randD());
+
+    BernsteinPolinom<Real> bp(bernstein_size, dimensions, gen);
     Data<Real> data;
 
     data.points.resize(data_size, vector<Real>(dimensions));
@@ -118,9 +152,7 @@ int main(const int argc, const char *argv[])
         return 0;
     }
 
-    random_device randD;
     uniform_real_distribution<Real> dist(0., 1.);
-    mt19937 gen(randD());
 
     output << OUTPUT_NUMBER_POINTS << " " << dimensions << "\n";
 
