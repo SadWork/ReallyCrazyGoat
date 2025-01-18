@@ -81,11 +81,12 @@ public:
         return math_exp / sum_p;
     }
 
-    void get_grad(vector<Number> &grad, Data<Number> &data, Number h = 1e-7)
+    Number get_grad(vector<Number> &grad, Data<Number> &data, Number h = 1e-7)
     {
-        grad.clear();
-        grad.resize(4 * points.size()); // x_i, y_i, f(x_i, y_i), experiments_size[i] для i = 1 .. N
+        // x_i, y_i, f(x_i, y_i), experiments_size[i] для i = 1 .. N
         // порядок: x_1, y_1, ..., x_N, y_N, f(x_1, y_1), ..., f(x_N, y_N), n_1, ..., n_N
+
+        Number error = TotalError(*this, data);
 
         // производные по x_i и y_i
         int grad_index = 0;
@@ -98,11 +99,9 @@ public:
                 // производная для j-й координаты i-й точки
                 points[i][j] += h;
                 Number error_plus = TotalError(*this, data);
-                points[i][j] -= 2 * h;
-                Number error_minus = TotalError(*this, data);
                 points[i][j] = original_value;
 
-                grad[grad_index++] = (error_plus - error_minus) / (2 * h);
+                grad[grad_index++] = (error_plus - error) / h;
             }
         }
 
@@ -113,11 +112,9 @@ public:
 
             values[i] += h;
             Number error_plus = TotalError(*this, data);
-            values[i] -= 2 * h;
-            Number error_minus = TotalError(*this, data);
             values[i] = original_value;
 
-            grad[grad_index++] = (error_plus - error_minus) / (2 * h);
+            grad[grad_index++] = (error_plus - error) / h;
         }
 
         // производные по n_i
@@ -127,12 +124,12 @@ public:
 
             experiments_size[i] += h;
             Number error_plus = TotalError(*this, data);
-            experiments_size[i] -= 2 * h;
-            Number error_minus = TotalError(*this, data);
             experiments_size[i] = original_value;
 
-            grad[grad_index++] = (error_plus - error_minus) / (2 * h);
+            grad[grad_index++] = (error_plus - error) / h;
         }
+
+        return error;
     }
 
 private:
@@ -157,12 +154,12 @@ void gradient_descent(BernsteinPolinom<Number> &bp, Data<Number> &data, int step
     Number learning_rate = 0.01;
 
     // Вектор градиентов
-    vector<Number> grad;
+    vector<Number> grad(4 * bp.points.size());
 
     for (int step = 0; step < steps; step++)
     {
         // Вычисляем градиент
-        bp.get_grad(grad, data);
+        Number error = bp.get_grad(grad, data);
 
         // Обновляем точки (x_i, y_i)
         int grad_index = 0;
@@ -186,9 +183,7 @@ void gradient_descent(BernsteinPolinom<Number> &bp, Data<Number> &data, int step
             bp.experiments_size[i] -= learning_rate * grad[grad_index++];
         }
 
-        // Вычисляем текущую ошибку
-        Number error = TotalError(bp, data);
-        // cout << "Шаг: " << step + 1 << ", Ошибка: " << error << endl;
+        cout << "Шаг: " << step + 1 << ", Ошибка: " << error << endl;
 
         // Останавливаемся, если ошибка достаточно мала
         if (error < eps)
@@ -239,15 +234,6 @@ int main(const int argc, const char *argv[])
         }
         cin >> data.values[i];
     }
-
-    // Тест функции градиента
-    // vector<Real> grad;
-    // bp.get_grad(grad, data);
-    // cout << "Градиенты: \n";
-    // for (int i = 0; i < grad.size(); i++)
-    // {
-    //     cout << "grad[" << i << "] = " << grad[i] << endl;
-    // }
 
     gradient_descent(bp, data, gradient_steps);
 
