@@ -1,9 +1,10 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-static constexpr double eps = 1e-3;     // минимум для функции ошибки
-static constexpr double h_eps = 1e-5;   // минимум для точек
-static constexpr double exp_eps = 1e-5; // смещение для experiments_size
+static constexpr double eps = 1e-3;                // минимум для функции ошибки
+static constexpr double h_eps = 1e-5;              // минимум для точек
+static constexpr double exp_eps = 1e-5;            // смещение для experiments_size
+static constexpr double learning_rate_boost = 1e3; // добавка для медленно меняющихся параметров
 
 template <class Number>
 class Data
@@ -248,20 +249,15 @@ void accelerated_gradient_descent(BernsteinPolinom<Number> &bp, Data<Number> &da
                 grad_index++;
             }
         }
-        int i_min = 0;
         for (int i = 0; i < bp.values.size(); i++)
         {
             current_update[grad_index] = momentum_factor * prev_update[grad_index] + learning_rate * grad[grad_index];
             bp.values[i] -= current_update[grad_index];
-            if (fabs(bp.values[i]) < fabs(bp.values[i_min]))
-            {
-                i_min = i;
-            }
             grad_index++;
         }
         for (int i = 0; i < bp.experiments_size.size(); i++)
         {
-            current_update[grad_index] = momentum_factor * prev_update[grad_index] + learning_rate * 1e3 * grad[grad_index];
+            current_update[grad_index] = momentum_factor * prev_update[grad_index] + learning_rate * learning_rate * grad[grad_index];
             bp.experiments_size[i] -= current_update[grad_index];
             grad_index++;
         }
