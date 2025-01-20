@@ -1,8 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
-
 static constexpr double eps = 1e-3;     // минимум для функции ошибки
-static constexpr double h_eps = 1e-5;   // минимум для точек
+static constexpr double h_eps = 1e-5;   // смещение для точек
 static constexpr double exp_eps = 1e-5; // смещение для experiments_size
 
 template <class Number>
@@ -142,11 +141,11 @@ public:
         {
             Number original_value = experiments_size[i];
 
-            experiments_size[i] += h_eps;
+            experiments_size[i] += exp_eps;
             Number error_plus = calc_p(i, p); // TODO: возможно тут тоже можно сократить вычисления
             experiments_size[i] = original_value;
 
-            Number deriv = (error_plus - P[i]) / h_eps;
+            Number deriv = (error_plus - P[i]) / exp_eps;
             grad[grad_index++] = deriv * values[i] * (sum_P - P[i]) / sum_P2;
         }
 
@@ -287,8 +286,7 @@ void gradient_descent(BernsteinPolinom<Number> &bp, Data<Number> &data, int step
     Number learning_rate = 0.005;
 
     // Вектор градиентов
-    int dimension = bp.points[0].size();
-    vector<Number> grad((dimension + 2) * bp.points.size());
+    vector<Number> grad(4 * bp.points.size());
 
     for (int step = 0; step < steps; step++)
     {
@@ -332,6 +330,8 @@ enum
 {
     ARG_STEPS = 1,
     ARG_BERNSTEIN_SIZE = 2,
+    ARG_OUTPUT_PATH = 3,
+    ARG_TARGET_HEIGHT = 4,
 
     OUTPUT_NUMBER_POINTS = 1000,
 };
@@ -339,17 +339,23 @@ enum
 using Real = double;
 int main(const int argc, const char *argv[])
 {
-    if (argc < 3)
+    // freopen("points_blue.txt", "r", stdin);
+    if (argc < 5)
     {
-        cout << "Usage: " << argv[0] << " <steps> <bernstein_size>\n";
+        cout << "Usage: " << argv[0] << " <steps> <bernstein_size> <output_path> <target_height>\n";
         return 1;
     }
 
     int gradient_steps = strtol(argv[ARG_STEPS], NULL, 0);
     int bernstein_size = strtol(argv[ARG_BERNSTEIN_SIZE], NULL, 0);
 
-    int dimensions, data_size, experiments_size;
-    cin >> dimensions >> data_size;
+    string output_path = argv[ARG_OUTPUT_PATH];
+    double TargetHeight = strtod(argv[ARG_TARGET_HEIGHT], NULL);
+
+    int originalWidth, originalHeight;
+    cin >> originalWidth >> originalHeight;
+
+    int dimensions = 2, data_size = originalHeight * originalWidth;
 
     random_device randD;
     mt19937 gen(randD());
@@ -369,39 +375,58 @@ int main(const int argc, const char *argv[])
         cin >> data.values[i];
     }
 
-    gradient_descent(bp, data, gradient_steps);
+    accelerated_gradient_descent(bp, data, gradient_steps);
 
-    string output_path = "~approximation.txt";
+    // Вывод финальной ошибки после обучения
+    Real error = TotalError(bp, data);
+    cout << "Ошибка: " << error << endl;
+
     ofstream output(output_path);
     if (!output.is_open())
     {
-        cout << "Failed to open output file\n";
+        cout << "Не удалось открыть файл." << endl;
         return 0;
     }
 
-    uniform_real_distribution<Real> dist(0., 1.);
+    const double K = TargetHeight / originalHeight;
+    const int newWidth = K * originalWidth;   // Ширина изображения с увеличенным разрешением
+    const int newHeight = K * originalHeight; // Высота изображения с увеличенным разрешением
+    const int NUMBER_POINTS = newWidth * newHeight;
+    output << newWidth << " " << newHeight << "\n";
 
-    output << OUTPUT_NUMBER_POINTS << " " << dimensions << "\n";
+    vector<double> new_point(dimensions);
 
-    vector<Real> new_point(dimensions);
-
-    for (int i = 0; i < OUTPUT_NUMBER_POINTS; i++)
+    for (int i = 0; i < newHeight; i++)
     {
-        for (int j = 0; j < dimensions; j++)
+        cout << output_path << ": " << i << "/" << newHeight << "\n";
+        fflush(stdout);
+        for (int j = 0; j < newWidth; j++)
         {
-            new_point[j] = dist(gen);
-            output << new_point[j] << " ";
-        }
+            double normalized_j = (static_cast<double>(j) / (newWidth));
+            double normalized_i = (static_cast<double>(i) / (newHeight));
 
-        output << bp.calc(new_point) << "\n";
+            new_point[0] = normalized_j;
+            new_point[1] = normalized_i;
+
+            output << (new_point[0]) << " " << (new_point[1]) << " ";
+            output << min(1., max(0., bp.calc(new_point))) << "\n";
+        }
     }
 
     output.close();
     cout << "Файл успешно записан." << endl;
 
-    // Тестовая проверка функции ошибки
-    Real error = TotalError(bp, data);
-    cout << "Ошибка: " << error << endl;
+    output.open("~coeff" + output_path);
+    for (int i = 0; i < bp.values.size(); ++i)
+    {
+        output << "point = [";
+        for (int j = 0; j < bp.points[i].size(); ++j)
+        {
+            output << bp.points[i][j] << ", ";
+        }
+        output << "] value = " << bp.values[i] << " n = " << bp.experiments_size[i] << "\n";
+    }
+    output.close();
 
     return 0;
 }
