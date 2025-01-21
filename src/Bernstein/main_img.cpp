@@ -5,6 +5,7 @@ static constexpr double eps = 1e-3;                // минимум для фу
 static constexpr double h_eps = 1e-5;              // смещение для точек
 static constexpr double exp_eps = 1e-5;            // смещение для experiments_size
 static constexpr double learning_rate_boost = 1e3; // добавка для медленно меняющихся параметров
+auto start = std::chrono::high_resolution_clock::now();
 
 template <class Number>
 class Data
@@ -118,13 +119,53 @@ public:
         // производные по x_i и y_i
         for (int i = 0; i < points.size(); i++)
         {
+            // заранее считаем коэффициенты, не меняющиеся для всех j
+            Number normalize_exp = fabs(experiments_size[i]) + values.size();
+            vector<Number> ln_pk(points[i].size(), 0);
+            for (int k = 0; k < points[i].size(); k++) {
+                Number pk = std::max(p[k], static_cast<Number>(h_eps));
+                Number qk = std::max(1 - pk, static_cast<Number>(h_eps));
+                Number normalize_point = (1 - cos(points[i][k])) / 2;
+                Number success_cnt = normalize_point * normalize_exp;
+                Number failure_cnt = (1 - normalize_point) * normalize_exp;
+                ln_pk[k] = lgamma(normalize_exp + 1);
+                ln_pk[k] -= lgamma(success_cnt + 1);
+                ln_pk[k] -= lgamma(failure_cnt + 1);
+                ln_pk[k] += success_cnt * log(pk);
+                ln_pk[k] += failure_cnt * log(qk);
+            }
+
             for (int j = 0; j < points[i].size(); j++)
             {
-                Number original_value = points[i][j];
-
                 // производная для j-й координаты i-й точки
+                Number original_value = points[i][j];
                 points[i][j] += h_eps;
-                Number error_plus = calc_p(i, p); // TODO: убрать лишние вычисления, мы изменили только одну координату, а считаем снова все
+
+                // > start of `calc_p(i, p)`
+
+                // вклад изменённой координаты:
+                Number pj = std::max(p[j], static_cast<Number>(h_eps));
+                Number qj = std::max(1 - pj, static_cast<Number>(h_eps));
+                Number normalize_point = (1 - cos(points[i][j])) / 2;
+                Number success_cnt = normalize_point * normalize_exp;
+                Number failure_cnt = (1 - normalize_point) * normalize_exp;
+                Number ln_p = lgamma(normalize_exp + 1);
+                ln_p -= lgamma(success_cnt + 1);
+                ln_p -= lgamma(failure_cnt + 1);
+                ln_p += success_cnt * log(pj);
+                ln_p += failure_cnt * log(qj);
+
+                // вклад остальных координат:
+                for (int k = 0; k < points[i].size(); k++)
+                {
+                    if (k == j) continue;
+                    ln_p += ln_pk[k];
+                }
+                Number error_plus = exp(ln_p);
+
+                // > end of `calc_p(i, p)`
+
+                // восстановим значение
                 points[i][j] = original_value;
 
                 Number deriv = (error_plus - P[i]) / h_eps;
@@ -144,7 +185,7 @@ public:
             Number original_value = experiments_size[i];
 
             experiments_size[i] += exp_eps;
-            Number error_plus = calc_p(i, p); // TODO: возможно тут тоже можно сократить вычисления
+            Number error_plus = calc_p(i, p); // дорогие вычисления, видимо, сократить не судьба
             experiments_size[i] = original_value;
 
             Number deriv = (error_plus - P[i]) / exp_eps;
@@ -265,12 +306,14 @@ void accelerated_gradient_descent(BernsteinPolinom<Number> &bp, Data<Number> &da
         // Обновляем предыдущее обновление
         prev_update = current_update;
 
-        cout << "Шаг: " << step + 1 << ", Ошибка: " << error << endl;
+        auto end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> elapsed = end - start;
+        cout << "Step: " << step + 1 << ", error: " << error << ", time: " << elapsed.count() << " seconds" << endl;;
 
         // Останавливаемся, если ошибка достаточно мала
         if (error < eps)
         {
-            cout << "Ускоренный градиентный спуск завершён: ошибка достигла порогового значения." << endl;
+            cout << "Accelerated gradient descent finished: error reached the threshold." << endl;
             break;
         }
     }
@@ -312,12 +355,14 @@ void gradient_descent(BernsteinPolinom<Number> &bp, Data<Number> &data, int step
             bp.experiments_size[i] -= learning_rate * grad[grad_index++];
         }
 
-        cout << "Шаг: " << step + 1 << ", Ошибка: " << error << endl;
+        auto end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> elapsed = end - start;
+        cout << "Step: " << step + 1 << ", error: " << error << ", time: " << elapsed.count() << " seconds" << endl;;
 
         // Останавливаемся, если ошибка достаточно мала
         if (error < eps)
         {
-            cout << "Градиентный спуск завершён: ошибка достигла порогового значения." << endl;
+            cout << "Gradient descent finished: error reached the threshold." << endl;
             break;
         }
     }
@@ -372,16 +417,17 @@ int main(const int argc, const char *argv[])
         cin >> data.values[i];
     }
 
+    auto start = std::chrono::high_resolution_clock::now();
     accelerated_gradient_descent(bp, data, gradient_steps);
 
     // Вывод финальной ошибки после обучения
     Real error = TotalError(bp, data);
-    cout << "Ошибка: " << error << endl;
+    cout << "Error: " << error << endl;
 
     ofstream output(output_path);
     if (!output.is_open())
     {
-        cout << "Не удалось открыть файл." << endl;
+        cout << "Couldn't open output file." << endl;
         return 0;
     }
 
@@ -395,7 +441,9 @@ int main(const int argc, const char *argv[])
 
     for (int i = 0; i < newHeight; i++)
     {
-        cout << output_path << ": " << i << "/" << newHeight << "\n";
+        if (i % 10 == 0)
+            cout << output_path << ": " << i << "/" << newHeight << "\n";
+        
         fflush(stdout);
         for (int j = 0; j < newWidth; j++)
         {
@@ -411,7 +459,7 @@ int main(const int argc, const char *argv[])
     }
 
     output.close();
-    cout << "Файл успешно записан." << endl;
+    cout << "File " << output_path << " written successfully." << endl;
 
     output.open("~coeff" + output_path);
     for (int i = 0; i < bp.values.size(); ++i)
